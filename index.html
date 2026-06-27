@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -333,6 +334,7 @@ header{background:var(--ink);color:#fff;padding:14px 16px 12px;position:sticky;t
 
 <script>
 const APP_VERSION = '1.0.0';
+const SHEETS_URL = "https://script.google.com/macros/s/AKfycbyrdPEGlmfqRn1KbQI9JFg-FXsKNQ_twH92_q7tpN6kYyWvUTu6x8jnOMGD6E3FLWa5_A/exec";
 let datos = [];
 let filtroActivo = 'TODOS';
 let cfg = {};
@@ -340,14 +342,14 @@ let cfg = {};
 function cargarDatos(){
   try { datos = JSON.parse(localStorage.getItem('raci_datos') || '[]'); } catch(e){ datos=[]; }
   try { cfg = JSON.parse(localStorage.getItem('raci_cfg') || '{}'); } catch(e){ cfg={}; }
-  if(cfg['cfg-url']) document.getElementById('cfg-url').value = cfg['cfg-url'];
+  if(SHEETS_URL) document.getElementById('cfg-url').value = SHEETS_URL;
   if(cfg['cfg-nombre']) document.getElementById('cfg-nombre').value = cfg['cfg-nombre'];
   if(cfg['cfg-tel']) document.getElementById('cfg-tel').value = cfg['cfg-tel'];
 }
 
 function guardarDatos(){ localStorage.setItem('raci_datos', JSON.stringify(datos)); }
 function guardarConfig(){
-  cfg['cfg-url'] = document.getElementById('cfg-url').value;
+  SHEETS_URL = document.getElementById('cfg-url').value;
   cfg['cfg-nombre'] = document.getElementById('cfg-nombre').value;
   cfg['cfg-tel'] = document.getElementById('cfg-tel').value;
   localStorage.setItem('raci_cfg', JSON.stringify(cfg));
@@ -403,7 +405,7 @@ function registrar(){
   showNotice('reg-notice',`Registrado <strong>${id}</strong> · ${verifTxt}`,'ok');
   limpiarForm();
 
-  if(cfg['cfg-url']) enviarASheets(item);
+  if(SHEETS_URL) enviarASheets(item);
 }
 
 function limpiarForm(){
@@ -415,9 +417,9 @@ function limpiarForm(){
 }
 
 async function enviarASheets(item){
-  if(!cfg['cfg-url']) return;
+  if(!SHEETS_URL) return;
   try{
-    await fetch(cfg['cfg-url'], {
+    await fetch(SHEETS_URL, {
       method:'POST',
       mode:'no-cors',
       headers:{'Content-Type':'application/json'},
@@ -437,7 +439,7 @@ function actualizarSyncBtn(est){
 
 function syncStatus(){
   actualizarSyncBtn('');
-  if(!cfg['cfg-url']){ switchTab('config'); return; }
+  if(!SHEETS_URL){ switchTab('config'); return; }
   actualizarSyncBtn('ok');
 }
 
