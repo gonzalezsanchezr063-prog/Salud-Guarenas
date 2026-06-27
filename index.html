@@ -513,13 +513,33 @@ function actualizarStats(){
 
 function cambiarEstado(id, est){
   const item = datos.find(d=>d.id===id);
-  if(item){ item.estado=est; guardarDatos(); renderLista(); }
+  if(item){
+    item.estado=est;
+    guardarDatos();
+    renderLista();
+    // Notificar al Sheet
+    if(SHEETS_URL){
+      fetch(SHEETS_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({action:'eliminar', id: id})
+      }).catch(()=>{});
+    }
+  }
 }
 
 function eliminar(id){
   if(!confirm('¿Borrar este registro?')) return;
   datos = datos.filter(d=>d.id!==id);
-  guardarDatos(); renderLista();
+  guardarDatos();
+  renderLista();
+  if(SHEETS_URL){
+    fetch(SHEETS_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'eliminar', id: id})
+    }).catch(()=>{});
+  }
 }
 
 function generarReporte(){
