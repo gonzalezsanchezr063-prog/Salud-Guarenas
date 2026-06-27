@@ -348,6 +348,20 @@ function cargarDatos(){
 }
 
 function guardarDatos(){ localStorage.setItem('raci_datos', JSON.stringify(datos)); }
+
+async function cargarDesdeSheets(){
+  if(!SHEETS_URL) return;
+  try{
+    const resp = await fetch(SHEETS_URL + '?action=listar');
+    const json = await resp.json();
+    if(json.datos && json.datos.length > 0){
+      // Mergear: conservar locales y agregar remotos que no existan
+      const idsLocales = new Set(datos.map(d=>d.id));
+      json.datos.forEach(d=>{ if(!idsLocales.has(d.id)) datos.push(d); });
+      guardarDatos();
+    }
+  } catch(e){ console.log('Sin conexión para sincronizar'); }
+}
 function guardarConfig(){
   SHEETS_URL = document.getElementById('cfg-url').value;
   cfg['cfg-nombre'] = document.getElementById('cfg-nombre').value;
@@ -647,7 +661,8 @@ function switchTab(name){
 
 // Init
 cargarDatos();
-renderLista();
+cargarDesdeSheets().then(()=>renderLista());
+setInterval(()=>cargarDesdeSheets().then(()=>renderLista()), 30000);
 </script>
 </body>
 </html>
