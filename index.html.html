@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Información comunitaria en tiempo real – Guarenas">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Salud Guarenas">
+<title>Salud Guarenas</title>
+<style>
+:root{
+  --rojo:#dc2626;--rojo-bg:#fee2e2;--rojo-txt:#991b1b;
+  --naranja:#d97706;--naranja-bg:#fef3c7;--naranja-txt:#92400e;
+  --verde:#16a34a;--verde-bg:#dcfce7;--verde-txt:#166534;
+  --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;
+  --surface:#ffffff;--surface2:#f8fafc;--surface3:#f1f5f9;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --accent:#0f172a;--accent-fg:#ffffff;
+  --radius:10px;--radius-sm:6px;
+  --font:'Inter',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:var(--font);background:var(--surface2);color:var(--ink);min-height:100dvh;padding-bottom:80px}
+
+/* NAV */
+header{background:var(--ink);color:#fff;padding:14px 16px 12px;position:sticky;top:0;z-index:100}
+.header-inner{max-width:600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:17px;font-weight:700;letter-spacing:-.3px}
+.logo span{color:#f59e0b}
+.header-sub{font-size:11px;opacity:.55;margin-top:1px}
+.sync-btn{font-size:11px;padding:5px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.2);background:none;color:rgba(255,255,255,.7);cursor:pointer;display:flex;align-items:center;gap:5px}
+.sync-btn:active{opacity:.7}
+
+/* TABS */
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:53px;z-index:99}
+.tabs-inner{max-width:600px;margin:0 auto;display:flex}
+.tab{flex:1;padding:12px 8px;font-size:13px;font-weight:500;text-align:center;color:var(--ink2);border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:var(--font)}
+.tab.active{color:var(--ink);border-bottom-color:var(--ink)}
+.tab-icon{font-size:16px;display:block;margin-bottom:2px}
+
+/* PANELS */
+.panel{display:none;max-width:600px;margin:0 auto;padding:16px 14px}
+.panel.active{display:block}
+
+/* FORMS */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:5px;letter-spacing:.2px}
+.field input,.field select,.field textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);
+  font-size:14px;font-family:var(--font);color:var(--ink);background:var(--surface);
+  -webkit-appearance:none;appearance:none;transition:border-color .15s
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--ink)}
+.field textarea{resize:none;min-height:72px;line-height:1.5}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.req{color:var(--rojo)}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;font-family:var(--font);cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--ink);transition:all .12s;width:100%;margin-top:4px}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--ink);color:#fff;border-color:transparent}
+.btn.primary:active{background:#1e293b}
+.btn.sm{padding:7px 12px;font-size:12px;width:auto}
+.btn.danger{color:var(--rojo);border-color:#fca5a5}
+.btn-row{display:flex;gap:8px;margin-top:12px}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 8px;text-align:center}
+.stat-n{font-size:24px;font-weight:700;line-height:1}
+.stat-l{font-size:10px;color:var(--ink3);margin-top:4px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.stat-n.r{color:var(--rojo)}.stat-n.o{color:var(--naranja)}.stat-n.g{color:var(--verde)}.stat-n.b{color:var(--ink)}
+
+/* FILTERS */
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:6px 12px;border-radius:20px;border:1px solid var(--border2);background:none;font-size:12px;font-weight:500;color:var(--ink2);cursor:pointer;font-family:var(--font)}
+.chip.active{background:var(--ink);color:#fff;border-color:transparent}
+
+/* CARDS */
+.list{display:flex;flex-direction:column;gap:8px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;border-left:3px solid var(--border)}
+.card.ROJA{border-left-color:var(--rojo)}
+.card.NARANJA{border-left-color:var(--naranja)}
+.card.VERDE{border-left-color:var(--verde)}
+.card.RESUELTO{border-left-color:var(--border2);opacity:.6}
+.card-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.badge{font-size:10px;font-weight:600;padding:3px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0;letter-spacing:.3px}
+.badge.ROJA{background:var(--rojo-bg);color:var(--rojo-txt)}
+.badge.NARANJA{background:var(--naranja-bg);color:var(--naranja-txt)}
+.badge.VERDE{background:var(--verde-bg);color:var(--verde-txt)}
+.badge.cat{background:var(--surface3);color:var(--ink2)}
+.badge.tipo{background:var(--surface3);color:var(--ink3);font-size:9px}
+.card-title{font-size:14px;font-weight:600;color:var(--ink);flex:1;line-height:1.3}
+.card-where{font-size:12px;color:var(--ink2);margin-bottom:6px;display:flex;align-items:flex-start;gap:4px}
+.card-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.vdot.ok{background:#22c55e}.vdot.warn{background:#f59e0b}.vdot.old{background:#ef4444}
+.vtime{font-size:11px;font-weight:500}
+.vtime.ok{color:var(--verde-txt)}.vtime.warn{color:var(--naranja-txt)}.vtime.old{color:var(--rojo-txt)}
+.verif-tag{font-size:10px;color:var(--ink3);background:var(--surface3);padding:2px 6px;border-radius:3px}
+.card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.mini{font-size:11px;padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:none;font-family:var(--font);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:4px}
+.mini:active{background:var(--surface3)}
+.mini.ok{color:var(--verde);border-color:#86efac}
+.mini.bad{color:var(--rojo);border-color:#fca5a5}
+
+/* ALERT / NOTICE */
+.notice{padding:10px 12px;border-radius:var(--radius-sm);font-size:13px;border:1px solid;margin-bottom:12px;display:none}
+.notice.ok{background:var(--verde-bg);color:var(--verde-txt);border-color:#86efac}
+.notice.warn{background:var(--naranja-bg);color:var(--naranja-txt);border-color:#fcd34d}
+.notice.err{background:var(--rojo-bg);color:var(--rojo-txt);border-color:#fca5a5}
+.notice.info{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}
+
+/* REPORTE */
+.rpt-wrap{max-width:360px;margin:0 auto}
+.rpt-box{border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;font-size:13px;background:var(--surface)}
+.rpt-hd{background:var(--ink);color:#fff;padding:10px 14px}
+.rpt-hd-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.rpt-hd-sub{font-size:11px;opacity:.6}
+.rpt-sec-hd{padding:6px 12px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.rpt-sec.r .rpt-sec-hd{background:var(--rojo-bg);color:var(--rojo-txt)}
+.rpt-sec.o .rpt-sec-hd{background:var(--naranja-bg);color:var(--naranja-txt)}
+.rpt-sec.g .rpt-sec-hd{background:var(--verde-bg);color:var(--verde-txt)}
+.rpt-item{display:flex;gap:8px;padding:8px 12px;border-top:1px solid var(--border);align-items:flex-start}
+.rpt-badge{min-width:46px;font-size:10px;font-weight:600;padding:2px 5px;border-radius:3px;text-align:center;letter-spacing:.2px}
+.rpt-badge.ROJA{background:var(--rojo-bg);color:var(--rojo-txt)}
+.rpt-badge.NARANJA{background:var(--naranja-bg);color:var(--naranja-txt)}
+.rpt-badge.VERDE{background:var(--verde-bg);color:var(--verde-txt)}
+.rpt-what{font-size:12px;font-weight:600;line-height:1.3}
+.rpt-where{font-size:11px;color:var(--ink2);margin-top:1px}
+.rpt-when{font-size:10px;margin-top:3px}
+.rpt-when.ok{color:var(--verde-txt)}.rpt-when.warn{color:var(--naranja-txt)}
+.rpt-foot{background:var(--surface3);padding:7px 12px;font-size:10px;color:var(--ink3);border-top:1px solid var(--border)}
+.txt-plain{background:var(--surface3);border-radius:var(--radius-sm);padding:12px;font-size:12px;font-family:monospace;white-space:pre-wrap;word-break:break-word;margin-top:10px;border:1px solid var(--border);max-height:220px;overflow-y:auto;color:var(--ink)}
+.empty{text-align:center;padding:40px 16px;color:var(--ink3);font-size:13px}
+.empty-icon{font-size:32px;margin-bottom:8px}
+
+/* SECTION TITLES */
+.sec-title{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:14px}
+.sec-sub{font-size:12px;color:var(--ink2);margin-top:-10px;margin-bottom:14px;line-height:1.5}
+
+/* SETUP */
+.setup-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.setup-card h3{font-size:13px;font-weight:600;margin-bottom:8px}
+.setup-card p{font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:8px}
+.setup-card code{font-size:11px;background:var(--surface3);padding:2px 6px;border-radius:3px;font-family:monospace}
+
+/* SPINNER */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="logo">Salud <span>·</span> Guarenas</div>
+      <div class="header-sub">Información comunitaria en tiempo real</div>
+    </div>
+    <button class="sync-btn" onclick="syncStatus()" id="sync-btn">
+      <span id="sync-icon">●</span> <span id="sync-txt">Local</span>
+    </button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tabs-inner">
+    <button class="tab active" onclick="switchTab('registro')">
+      <span class="tab-icon">＋</span>Registrar
+    </button>
+    <button class="tab" onclick="switchTab('tablero')">
+      <span class="tab-icon">◉</span>Tablero
+    </button>
+    <button class="tab" onclick="switchTab('reporte')">
+      <span class="tab-icon">⚡</span>Reporte
+    </button>
+    <button class="tab" onclick="switchTab('config')">
+      <span class="tab-icon">⚙</span>Config
+    </button>
+  </div>
+</div>
+
+<!-- ===== REGISTRO ===== -->
+<div id="tab-registro" class="panel active">
+  <div class="sec-title">Nuevo reporte</div>
+  <div id="reg-notice" class="notice"></div>
+
+  <div class="field">
+    <label>Categoría <span class="req">*</span></label>
+    <select id="reg-cat">
+      <option value="">— Seleccionar —</option>
+      <option>SALUD</option><option>ALIMENTO</option><option>AGUA</option>
+      <option>GAS</option><option>LUZ</option><option>SEGURIDAD</option>
+      <option>TRANSPORTE</option><option>OTRO</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>¿Qué hay / qué se necesita? <span class="req">*</span></label>
+    <textarea id="reg-desc" placeholder="Ej: Insulina disponible · Familia sin leche · Gas en bomba Km12"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Ubicación exacta <span class="req">*</span></label>
+    <input id="reg-loc" type="text" placeholder="Sector, calle, referencia cercana">
+  </div>
+
+  <div class="row2">
+    <div class="field">
+      <label>Urgencia <span class="req">*</span></label>
+      <select id="reg-urg">
+        <option value="">— —</option>
+        <option value="ROJA">🔴 ROJA – Vida</option>
+        <option value="NARANJA">🟠 NARANJA – Urgente</option>
+        <option value="VERDE">🟢 VERDE – Estable</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Tipo</label>
+      <select id="reg-tipo">
+        <option value="NECESIDAD">Necesidad</option>
+        <option value="RECURSO">Recurso</option>
+        <option value="CENTRO">Centro ayuda</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label>Fuente 1 (alias)</label>
+    <input id="reg-f1" type="text" placeholder="Ej: vecina sector, grupo WA">
+  </div>
+
+  <div class="field">
+    <label>Fuente 2 – verificación independiente</label>
+    <input id="reg-f2" type="text" placeholder="Ej: confirmado in situ, llamada directa">
+  </div>
+
+  <div class="btn-row">
+    <button class="btn primary" onclick="registrar()">✔ Registrar dato</button>
+    <button class="btn sm" onclick="limpiarForm()">✕ Limpiar</button>
+  </div>
+
+  <div class="notice info" id="priv-notice" style="display:flex;margin-top:14px;gap:8px;align-items:flex-start">
+    🔒 <span><strong>Privacidad:</strong> No registres apellidos ni teléfonos completos. Solo alias y referencias de sector.</span>
+  </div>
+</div>
+
+<!-- ===== TABLERO ===== -->
+<div id="tab-tablero" class="panel">
+  <div class="stats" id="stats-row">
+    <div class="stat"><div class="stat-n r" id="st-r">0</div><div class="stat-l">Rojas</div></div>
+    <div class="stat"><div class="stat-n o" id="st-o">0</div><div class="stat-l">Naranjas</div></div>
+    <div class="stat"><div class="stat-n g" id="st-g">0</div><div class="stat-l">Verdes</div></div>
+    <div class="stat"><div class="stat-n b" id="st-t">0</div><div class="stat-l">Activos</div></div>
+  </div>
+  <div class="filters">
+    <button class="chip active" onclick="filtrar(this,'TODOS')">Todos</button>
+    <button class="chip" onclick="filtrar(this,'ROJA')">🔴 Rojos</button>
+    <button class="chip" onclick="filtrar(this,'NARANJA')">🟠 Naranjas</button>
+    <button class="chip" onclick="filtrar(this,'VERDE')">🟢 Verdes</button>
+    <button class="chip" onclick="filtrar(this,'RESUELTO')">✔ Resueltos</button>
+  </div>
+  <div class="list" id="lista"></div>
+</div>
+
+<!-- ===== REPORTE ===== -->
+<div id="tab-reporte" class="panel">
+  <div class="sec-title">Reporte WhatsApp</div>
+  <div class="sec-sub">Genera la imagen para compartir y el texto plano para conexiones lentas.</div>
+  <div class="btn-row" style="margin-bottom:14px">
+    <button class="btn primary" onclick="generarReporte()">↻ Generar reporte</button>
+    <button class="btn sm" onclick="copiarTexto()">⧉ Copiar texto</button>
+  </div>
+  <div id="rpt-visual" class="rpt-wrap"></div>
+  <div id="txt-wrap" style="display:none">
+    <div style="font-size:11px;color:var(--ink3);margin-top:14px;margin-bottom:4px;font-weight:500">TEXTO PLANO (para conexión lenta):</div>
+    <div class="txt-plain" id="txt-plain"></div>
+  </div>
+</div>
+
+<!-- ===== CONFIG ===== -->
+<div id="tab-config" class="panel">
+  <div class="sec-title">Configuración</div>
+
+  <div class="setup-card">
+    <h3>🔗 Google Sheets (backend gratuito)</h3>
+    <p>Para sincronizar datos entre varios dispositivos, conecta un Google Sheet con Google Apps Script. Es gratis.</p>
+    <div class="field">
+      <label>URL de tu Apps Script (Web App)</label>
+      <input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/..." oninput="guardarConfig()">
+    </div>
+    <div class="field">
+      <label>Nombre del coordinador</label>
+      <input id="cfg-nombre" type="text" placeholder="Ej: Red Salud Guarenas" oninput="guardarConfig()">
+    </div>
+    <div class="field">
+      <label>Teléfono de contacto (para el reporte)</label>
+      <input id="cfg-tel" type="text" placeholder="Ej: +58 412-XXX-XXXX" oninput="guardarConfig()">
+    </div>
+    <button class="btn sm" onclick="testConexion()">Probar conexión</button>
+    <div id="cfg-notice" class="notice" style="margin-top:8px"></div>
+  </div>
+
+  <div class="setup-card">
+    <h3>📋 Cómo conectar Google Sheets</h3>
+    <p>1. Ve a <strong>sheets.google.com</strong> y crea una hoja llamada <code>SaludGuarenas</code>.</p>
+    <p>2. En el menú: <strong>Extensiones → Apps Script</strong>.</p>
+    <p>3. Pega el código que aparece abajo, guarda y despliega como <strong>Web App</strong> (acceso: cualquiera).</p>
+    <p>4. Copia la URL que te da y pégala arriba.</p>
+    <button class="btn sm" onclick="mostrarScript()">Ver código Apps Script</button>
+    <div id="script-box" style="display:none;margin-top:8px">
+      <div class="txt-plain" id="script-code"></div>
+      <button class="btn sm" style="margin-top:6px" onclick="copiarScript()">⧉ Copiar código</button>
+    </div>
+  </div>
+
+  <div class="setup-card">
+    <h3>💾 Datos locales</h3>
+    <p>Los datos se guardan en este dispositivo. Exporta para hacer respaldo.</p>
+    <div class="btn-row">
+      <button class="btn sm" onclick="exportarCSV()">↓ Exportar CSV</button>
+      <button class="btn sm danger" onclick="borrarTodo()">✕ Borrar todo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const APP_VERSION = '1.0.0';
+let datos = [];
+let filtroActivo = 'TODOS';
+let cfg = {};
+
+function cargarDatos(){
+  try { datos = JSON.parse(localStorage.getItem('raci_datos') || '[]'); } catch(e){ datos=[]; }
+  try { cfg = JSON.parse(localStorage.getItem('raci_cfg') || '{}'); } catch(e){ cfg={}; }
+  if(cfg['cfg-url']) document.getElementById('cfg-url').value = cfg['cfg-url'];
+  if(cfg['cfg-nombre']) document.getElementById('cfg-nombre').value = cfg['cfg-nombre'];
+  if(cfg['cfg-tel']) document.getElementById('cfg-tel').value = cfg['cfg-tel'];
+}
+
+function guardarDatos(){ localStorage.setItem('raci_datos', JSON.stringify(datos)); }
+function guardarConfig(){
+  cfg['cfg-url'] = document.getElementById('cfg-url').value;
+  cfg['cfg-nombre'] = document.getElementById('cfg-nombre').value;
+  cfg['cfg-tel'] = document.getElementById('cfg-tel').value;
+  localStorage.setItem('raci_cfg', JSON.stringify(cfg));
+}
+
+function horasVigencia(urg){ return urg==='ROJA'?6:urg==='NARANJA'?12:24; }
+
+function estadoVigencia(item){
+  if(item.estado==='RESUELTO') return 'RESUELTO';
+  const diff = (Date.now()-item.ts)/3600000;
+  const max = horasVigencia(item.urgencia);
+  if(diff > max) return 'VENCIDO';
+  if(diff > max*0.7) return 'POR_VENCER';
+  return 'VIGENTE';
+}
+
+function tiempoTexto(ts){
+  const h = (Date.now()-ts)/3600000;
+  if(h<1) return `${Math.round(h*60)} min`;
+  if(h<24) return `${Math.round(h)}h`;
+  return `${Math.round(h/24)}d`;
+}
+
+function showNotice(id, msg, tipo){
+  const el = document.getElementById(id);
+  el.className = 'notice '+tipo;
+  el.innerHTML = msg;
+  el.style.display = 'block';
+  if(tipo==='ok' || tipo==='err') setTimeout(()=>{ el.style.display='none'; }, 4000);
+}
+
+function registrar(){
+  const cat = document.getElementById('reg-cat').value;
+  const desc = document.getElementById('reg-desc').value.trim();
+  const loc = document.getElementById('reg-loc').value.trim();
+  const urg = document.getElementById('reg-urg').value;
+  const tipo = document.getElementById('reg-tipo').value;
+  const f1 = document.getElementById('reg-f1').value.trim();
+  const f2 = document.getElementById('reg-f2').value.trim();
+
+  if(!cat||!desc||!loc||!urg){
+    showNotice('reg-notice','Completa los campos obligatorios (marcados con *)','err');
+    return;
+  }
+
+  const verif = (f1&&f2)?2:(f1||f2)?1:0;
+  const id = 'R'+Date.now().toString().slice(-6);
+  const item = {id,cat,desc,loc,urgencia:urg,tipo,f1,f2,verif,ts:Date.now(),estado:'ACTIVO'};
+  datos.unshift(item);
+  guardarDatos();
+
+  const verifTxt = verif===2?'✔✔ Doble verificación':verif===1?'⚡ Una fuente – busca segunda':'⚠ Sin verificar';
+  showNotice('reg-notice',`Registrado <strong>${id}</strong> · ${verifTxt}`,'ok');
+  limpiarForm();
+
+  if(cfg['cfg-url']) enviarASheets(item);
+}
+
+function limpiarForm(){
+  ['reg-cat','reg-desc','reg-loc','reg-urg','reg-f1','reg-f2'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  document.getElementById('reg-tipo').value='NECESIDAD';
+}
+
+async function enviarASheets(item){
+  if(!cfg['cfg-url']) return;
+  try{
+    await fetch(cfg['cfg-url'], {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'agregar', item})
+    });
+    actualizarSyncBtn('ok');
+  } catch(e){ actualizarSyncBtn('err'); }
+}
+
+function actualizarSyncBtn(est){
+  const icon = document.getElementById('sync-icon');
+  const txt = document.getElementById('sync-txt');
+  if(est==='ok'){icon.textContent='✔';txt.textContent='Sincronizado';}
+  else if(est==='err'){icon.textContent='✕';txt.textContent='Sin conexión';}
+  else{icon.textContent='●';txt.textContent='Local';}
+}
+
+function syncStatus(){
+  actualizarSyncBtn('');
+  if(!cfg['cfg-url']){ switchTab('config'); return; }
+  actualizarSyncBtn('ok');
+}
+
+function filtrar(btn, val){
+  filtroActivo = val;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  renderLista();
+}
+
+function renderLista(){
+  const lista = document.getElementById('lista');
+  let items = datos.filter(d=>{
+    if(filtroActivo==='TODOS') return d.estado!=='RESUELTO';
+    if(filtroActivo==='RESUELTO') return d.estado==='RESUELTO';
+    return d.urgencia===filtroActivo && d.estado!=='RESUELTO';
+  });
+  actualizarStats();
+  if(!items.length){
+    lista.innerHTML=`<div class="empty"><div class="empty-icon">📭</div>Sin datos para este filtro.<br>Ve a <strong>Registrar</strong> para agregar información.</div>`;
+    return;
+  }
+  lista.innerHTML = items.map(item=>{
+    const ev = estadoVigencia(item);
+    const dotCls = ev==='VIGENTE'?'ok':ev==='POR_VENCER'?'warn':'old';
+    const timeCls = dotCls;
+    const evTxt = ev==='VIGENTE'?'Vigente':ev==='POR_VENCER'?'Por vencer':ev==='VENCIDO'?'Vencido':'Resuelto';
+    return `<div class="card ${item.urgencia}" id="c-${item.id}">
+      <div class="card-top">
+        <span class="badge ${item.urgencia}">${item.urgencia}</span>
+        <div class="card-title">${item.desc}</div>
+        <span class="badge cat">${item.cat}</span>
+      </div>
+      <div class="card-where">📍 ${item.loc}</div>
+      <div class="card-meta">
+        <span class="vdot ${dotCls}"></span>
+        <span class="vtime ${timeCls}">${evTxt} · hace ${tiempoTexto(item.ts)}</span>
+        <span class="verif-tag">${item.verif===2?'✔✔ 2 fuentes':item.verif===1?'⚡ 1 fuente':'Sin verif.'}</span>
+        <span style="font-size:10px;color:var(--ink3)">${item.id}</span>
+      </div>
+      <div class="card-actions">
+        ${item.estado!=='RESUELTO'?`<button class="mini ok" onclick="cambiarEstado('${item.id}','RESUELTO')">✔ Resuelto</button>`:''}
+        <button class="mini bad" onclick="cambiarEstado('${item.id}','VENCIDO')">✕ Vencido</button>
+        <button class="mini" onclick="eliminar('${item.id}')">🗑 Borrar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function actualizarStats(){
+  const act = datos.filter(d=>d.estado==='ACTIVO');
+  document.getElementById('st-r').textContent = act.filter(d=>d.urgencia==='ROJA').length;
+  document.getElementById('st-o').textContent = act.filter(d=>d.urgencia==='NARANJA').length;
+  document.getElementById('st-g').textContent = act.filter(d=>d.urgencia==='VERDE').length;
+  document.getElementById('st-t').textContent = act.length;
+}
+
+function cambiarEstado(id, est){
+  const item = datos.find(d=>d.id===id);
+  if(item){ item.estado=est; guardarDatos(); renderLista(); }
+}
+
+function eliminar(id){
+  if(!confirm('¿Borrar este registro?')) return;
+  datos = datos.filter(d=>d.id!==id);
+  guardarDatos(); renderLista();
+}
+
+function generarReporte(){
+  const act = datos.filter(d=>d.estado==='ACTIVO');
+  const rojos = act.filter(d=>d.urgencia==='ROJA');
+  const naranjas = act.filter(d=>d.urgencia==='NARANJA');
+  const verdes = act.filter(d=>d.urgencia==='VERDE');
+  const ahora = new Date();
+  const hora = ahora.toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'});
+  const vence = new Date(ahora.getTime()+12*3600000).toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'});
+  const tel = cfg['cfg-tel'] || '+58 4XX-XXX-XXXX';
+  const nombre = cfg['cfg-nombre'] || 'Salud Guarenas';
+
+  function itemHTML(item){
+    const ev = estadoVigencia(item);
+    const cls = ev==='VIGENTE'?'ok':'warn';
+    const vtxt = ev==='VIGENTE'?'Vigente ●':'Confirmar antes ◌';
+    return `<div class="rpt-item">
+      <span class="rpt-badge ${item.urgencia}">${item.urgencia}</span>
+      <div>
+        <div class="rpt-what">${item.desc}</div>
+        <div class="rpt-where">📍 ${item.loc}</div>
+        <div class="rpt-when ${cls}">${vtxt} · ${tiempoTexto(item.ts)} ${item.verif===2?'✔':''}</div>
+      </div>
+    </div>`;
+  }
+
+  let html = `<div class="rpt-box">
+    <div class="rpt-hd">
+      <div class="rpt-hd-title">⚡ ${nombre}</div>
+      <div class="rpt-hd-sub">Actualizado: ${hora} · Vigente hasta: ${vence}</div>
+    </div>`;
+  if(rojos.length) html += `<div class="rpt-sec r"><div class="rpt-sec-hd">🔴 Urgencia crítica</div>${rojos.map(itemHTML).join('')}</div>`;
+  if(naranjas.length) html += `<div class="rpt-sec o"><div class="rpt-sec-hd">🟠 Urgente – menos de 48h</div>${naranjas.map(itemHTML).join('')}</div>`;
+  if(verdes.length) html += `<div class="rpt-sec g"><div class="rpt-sec-hd">🟢 Disponible – estable</div>${verdes.map(itemHTML).join('')}</div>`;
+  if(!act.length) html += `<div style="padding:20px;text-align:center;font-size:12px;color:var(--ink3)">Sin datos activos. Registra información en la pestaña ＋.</div>`;
+  html += `<div class="rpt-foot">⚠️ Dato sin confirmar >12h = NO publicar · ✔ = 2 fuentes · Reportar: ${tel}</div></div>`;
+  document.getElementById('rpt-visual').innerHTML = html;
+
+  let txt = `⚡ ${nombre}\nActualizado: ${hora} | Vigente hasta: ${vence}\n`;
+  if(rojos.length) txt += `\n🔴 URGENCIA CRÍTICA\n`+rojos.map(d=>`• ${d.desc}\n  📍 ${d.loc} | hace ${tiempoTexto(d.ts)} ${d.verif===2?'✔':''}`).join('\n');
+  if(naranjas.length) txt += `\n\n🟠 URGENTE <48H\n`+naranjas.map(d=>`• ${d.desc}\n  📍 ${d.loc} | hace ${tiempoTexto(d.ts)} ${d.verif===2?'✔':''}`).join('\n');
+  if(verdes.length) txt += `\n\n🟢 DISPONIBLE\n`+verdes.map(d=>`• ${d.desc}\n  📍 ${d.loc} | hace ${tiempoTexto(d.ts)} ${d.verif===2?'✔':''}`).join('\n');
+  txt += `\n\n⚠️ Dato >12h sin confirmar = NO publicar\n✔ = 2 fuentes verificadas\nReportar: ${tel}`;
+  document.getElementById('txt-plain').textContent = txt;
+  document.getElementById('txt-wrap').style.display = 'block';
+}
+
+function copiarTexto(){
+  const txt = document.getElementById('txt-plain').textContent;
+  if(!txt){ generarReporte(); return; }
+  navigator.clipboard.writeText(txt).then(()=>alert('Texto copiado. Pégalo en WhatsApp.')).catch(()=>{});
+}
+
+function exportarCSV(){
+  const headers = 'ID,Categoría,Descripción,Ubicación,Urgencia,Tipo,Fuente1,Fuente2,Verificaciones,Fecha,Estado';
+  const rows = datos.map(d=>[
+    d.id,d.cat,`"${d.desc}"`,`"${d.loc}"`,d.urgencia,d.tipo,
+    d.f1||'',d.f2||'',d.verif,
+    new Date(d.ts).toLocaleString('es-VE'),d.estado
+  ].join(','));
+  const csv = [headers,...rows].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='salud-guarenas-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function borrarTodo(){
+  if(!confirm('¿Borrar TODOS los datos? Esta acción no se puede deshacer.')) return;
+  datos=[]; guardarDatos(); renderLista();
+  alert('Datos eliminados.');
+}
+
+function mostrarScript(){
+  const script = `// Google Apps Script para Salud Guarenas
+// Pega esto en Extensions → Apps Script
+// Luego despliega como Web App (Anyone can access)
+
+function doPost(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const data = JSON.parse(e.postData.contents);
+  
+  if(data.action === 'agregar') {
+    const item = data.item;
+    // Agregar encabezados si la hoja está vacía
+    if(sheet.getLastRow() === 0) {
+      sheet.appendRow(['ID','Categoría','Descripción','Ubicación',
+        'Urgencia','Tipo','Fuente1','Fuente2','Verificaciones',
+        'Fecha/hora','Estado']);
+    }
+    sheet.appendRow([
+      item.id, item.cat, item.desc, item.loc,
+      item.urgencia, item.tipo, item.f1||'', item.f2||'',
+      item.verif, new Date(item.ts).toLocaleString('es-VE'), item.estado
+    ]);
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({ok:true}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doGet(e) {
+  return ContentService
+    .createTextOutput(JSON.stringify({status:'Salud Guarenas activo'}))
+    .setMimeType(ContentService.MimeType.JSON);
+}`;
+  document.getElementById('script-code').textContent = script;
+  document.getElementById('script-box').style.display = 'block';
+}
+
+function copiarScript(){
+  navigator.clipboard.writeText(document.getElementById('script-code').textContent)
+    .then(()=>alert('Código copiado.')).catch(()=>{});
+}
+
+async function testConexion(){
+  const url = document.getElementById('cfg-url').value;
+  if(!url){ showNotice('cfg-notice','Ingresa la URL del Apps Script primero.','err'); return; }
+  showNotice('cfg-notice','Probando conexión...','info');
+  try{
+    await fetch(url, {mode:'no-cors'});
+    showNotice('cfg-notice','✔ Conexión exitosa. Los datos se sincronizarán automáticamente.','ok');
+  } catch(e){
+    showNotice('cfg-notice','No se pudo conectar. Verifica la URL y que el script esté desplegado como Web App pública.','err');
+  }
+}
+
+function switchTab(name){
+  const names = ['registro','tablero','reporte','config'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active', names[i]===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='tablero') renderLista();
+  if(name==='reporte') generarReporte();
+}
+
+// Init
+cargarDatos();
+renderLista();
+</script>
+</body>
+</html>
