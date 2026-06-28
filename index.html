@@ -106,6 +106,10 @@ header{background:var(--ink);color:#fff;padding:14px 16px 12px;position:sticky;t
 .card-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 .mini{font-size:11px;padding:5px 10px;border-radius:5px;border:1px solid var(--border);background:none;font-family:var(--font);color:var(--ink2);cursor:pointer;display:flex;align-items:center;gap:4px}
 .mini:active{background:var(--surface3)}
+.card-confirm{display:flex;align-items:center;gap:8px;margin-top:6px;padding-top:6px;border-top:0.5px solid var(--border);flex-wrap:wrap}
+.confirm-label{font-size:11px;color:var(--ink3)}
+.mini.confirm-btn{color:#1d4ed8;border-color:#bfdbfe;background:none}
+.mini.confirm-btn.voted{color:#166534;border-color:#86efac;background:#f0fdf4}
 .mini.ok{color:var(--verde);border-color:#86efac}
 .mini.bad{color:var(--rojo);border-color:#fca5a5}
 
@@ -499,6 +503,10 @@ function renderLista(){
         <button class="mini bad" onclick="cambiarEstado('${item.id}','VENCIDO')">✕ Vencido</button>
         <button class="mini" onclick="eliminar('${item.id}')">🗑 Borrar</button>
       </div>
+      <div class="card-confirm">
+        <span class="confirm-label">¿Ya se resolvió? Confírmalo:</span>
+        <button class="mini confirm-btn" onclick="confirmarResuelto('${item.id}', this)">👍 Lo confirmo (${item.confirmaciones||0})</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -524,6 +532,49 @@ function cambiarEstado(id, est){
         headers:{'Content-Type':'application/json'},
         body: JSON.stringify({action:'eliminar', id: id})
       }).catch(()=>{});
+    }
+  }
+}
+
+function confirmarResuelto(id, btn){
+  // Guardar votos en localStorage
+  const votosKey = 'raci_votos';
+  let votos = {};
+  try{ votos = JSON.parse(localStorage.getItem(votosKey)||'{}'); }catch(e){}
+  
+  if(votos[id]){
+    btn.textContent = '👍 Ya confirmaste este dato';
+    btn.classList.add('voted');
+    return;
+  }
+  
+  // Registrar voto
+  votos[id] = true;
+  localStorage.setItem(votosKey, JSON.stringify(votos));
+  
+  // Actualizar contador en datos
+  const item = datos.find(d=>d.id===id);
+  if(item){
+    item.confirmaciones = (item.confirmaciones||0) + 1;
+    guardarDatos();
+    
+    // Enviar confirmación al Sheet
+    if(SHEETS_URL){
+      fetch(SHEETS_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({action:'confirmar', id: id, confirmaciones: item.confirmaciones})
+      }).catch(()=>{});
+    }
+    
+    btn.textContent = '👍 Lo confirmo (' + item.confirmaciones + ')';
+    btn.classList.add('voted');
+    
+    // Si tiene 3 o más confirmaciones, sugerencia de resolver
+    if(item.confirmaciones >= 3){
+      if(confirm('Este dato tiene ' + item.confirmaciones + ' confirmaciones de resuelto. ¿Marcarlo como resuelto?')){
+        cambiarEstado(id, 'RESUELTO');
+      }
     }
   }
 }
