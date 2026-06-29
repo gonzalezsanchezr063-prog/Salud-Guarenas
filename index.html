@@ -213,8 +213,9 @@ header{background:var(--ink);color:#fff;padding:14px 16px 12px;position:sticky;t
   </div>
 
   <div class="field">
-    <label>Ubicación exacta <span class="req">*</span></label>
-    <input id="reg-loc" type="text" placeholder="Sector, calle, referencia cercana">
+    <label>Ubicación exacta <span class="req">*</span> <span id="loc-count" style="font-weight:400;color:var(--ink3)">0/20 mín.</span></label>
+    <input id="reg-loc" type="text" placeholder="Ej: Urb. Los Cortijos, calle 4, frente a la bodega El Faro" oninput="contarLoc()">
+    <div id="loc-hint" style="font-size:11px;margin-top:4px;color:var(--ink3)">Sé específico: sector + calle + referencia cercana. Mínimo 20 caracteres.</div>
   </div>
 
   <div class="row2">
@@ -271,6 +272,7 @@ header{background:var(--ink);color:#fff;padding:14px 16px 12px;position:sticky;t
     <button class="chip" onclick="filtrar(this,'NARANJA')">🟠 Naranjas</button>
     <button class="chip" onclick="filtrar(this,'VERDE')">🟢 Verdes</button>
     <button class="chip" onclick="filtrar(this,'RESUELTO')">✔ Resueltos</button>
+    <button class="chip" onclick="filtrar(this,'VENCIDO')">⏱ Vencidos</button>
   </div>
   <div class="list" id="lista"></div>
 </div>
@@ -408,7 +410,8 @@ function registrar(){
   const f1 = document.getElementById('reg-f1').value.trim();
   const f2 = document.getElementById('reg-f2').value.trim();
 
-  if(!cat||!desc||!loc||!urg){
+  if(!cat||!desc||!loc||!urg||loc.length<20){
+    if(loc.length<20 && loc.length>0){showNotice('reg-notice','La ubicación debe tener al menos 20 caracteres. Sé más específico.','err');return;}
     showNotice('reg-notice','Completa los campos obligatorios (marcados con *)','err');
     return;
   }
@@ -424,6 +427,24 @@ function registrar(){
   limpiarForm();
 
   if(SHEETS_URL) enviarASheets(item);
+}
+
+function contarLoc(){
+  const val = document.getElementById('reg-loc').value;
+  const n = val.length;
+  const el = document.getElementById('loc-count');
+  const hint = document.getElementById('loc-hint');
+  if(n >= 20){
+    el.textContent = n+' ✔';
+    el.style.color = 'var(--verde)';
+    hint.style.color = 'var(--verde)';
+    hint.textContent = '✔ Ubicación suficientemente específica.';
+  } else {
+    el.textContent = n+'/20 mín.';
+    el.style.color = n > 10 ? 'var(--naranja)' : 'var(--ink3)';
+    hint.style.color = 'var(--ink3)';
+    hint.textContent = 'Sé específico: sector + calle + referencia cercana. Mínimo 20 caracteres.';
+  }
 }
 
 function limpiarForm(){
@@ -471,9 +492,10 @@ function filtrar(btn, val){
 function renderLista(){
   const lista = document.getElementById('lista');
   let items = datos.filter(d=>{
-    if(filtroActivo==='TODOS') return d.estado!=='RESUELTO';
+    if(filtroActivo==='TODOS') return d.estado==='ACTIVO';
     if(filtroActivo==='RESUELTO') return d.estado==='RESUELTO';
-    return d.urgencia===filtroActivo && d.estado!=='RESUELTO';
+    if(filtroActivo==='VENCIDO') return d.estado==='VENCIDO';
+    return d.urgencia===filtroActivo && d.estado==='ACTIVO';
   });
   actualizarStats();
   if(!items.length){
